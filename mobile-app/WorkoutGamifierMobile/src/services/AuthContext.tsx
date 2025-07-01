@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, AuthResponse, LoginDto, CreateUserDto } from '../types';
-import apiService from './api';
+import { User, LoginDto, CreateUserDto } from '../types';
+import dataService from './dataService';
 
 interface AuthContextType {
   user: User | null;
@@ -30,10 +30,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
-      const token = await apiService.getAuthToken();
-      const storedUser = await apiService.getUser();
+      await dataService.initializeDefaultData();
+      const storedUser = await dataService.getUser();
       
-      if (token && storedUser) {
+      if (storedUser) {
         setUser(storedUser);
         setIsAuthenticated(true);
       } else {
@@ -52,13 +52,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (credentials: LoginDto) => {
     try {
       setIsLoading(true);
-      const response: AuthResponse = await apiService.login(credentials);
+      // For the self-contained app, we'll just check if user exists and initialize if needed
+      await dataService.initializeDefaultData();
+      const user = await dataService.getUser();
       
-      await apiService.setAuthToken(response.token);
-      await apiService.setUser(response.user);
-      
-      setUser(response.user);
-      setIsAuthenticated(true);
+      if (user) {
+        setUser(user);
+        setIsAuthenticated(true);
+      } else {
+        throw new Error('User not found');
+      }
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -70,12 +73,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (userData: CreateUserDto) => {
     try {
       setIsLoading(true);
-      const response: AuthResponse = await apiService.register(userData);
+      const user = await dataService.createUser(userData.username, userData.email);
+      await dataService.initializeDefaultData();
       
-      await apiService.setAuthToken(response.token);
-      await apiService.setUser(response.user);
-      
-      setUser(response.user);
+      setUser(user);
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Registration error:', error);
@@ -88,7 +89,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      await apiService.removeAuthToken();
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {
@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-      const storedUser = await apiService.getUser();
+      const storedUser = await dataService.getUser();
       if (storedUser) {
         setUser(storedUser);
       }
