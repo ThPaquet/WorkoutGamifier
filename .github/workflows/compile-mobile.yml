@@ -129,15 +129,35 @@ jobs:
     - name: Download APK
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
-        # Get the latest build URL and download the APK
-        BUILD_URL=$(npx eas build:list --platform=android --limit=1 --json | jq -r '.[0].artifacts.buildUrl')
-        echo "Build URL: $BUILD_URL"
+        # Wait a moment for the build to be fully processed
+        sleep 10
         
-        if [ "$BUILD_URL" != "null" ] && [ -n "$BUILD_URL" ]; then
-          curl -L -o WorkoutGamifier.apk "$BUILD_URL"
-          echo "APK downloaded successfully"
+        # Get the latest build info with better error handling
+        echo "Fetching build list..."
+        BUILD_LIST_OUTPUT=$(npx eas build:list --platform=android --limit=1 --json 2>&1)
+        echo "Build list output:"
+        echo "$BUILD_LIST_OUTPUT"
+        
+        # Check if the output is valid JSON
+        if echo "$BUILD_LIST_OUTPUT" | jq empty 2>/dev/null; then
+          BUILD_URL=$(echo "$BUILD_LIST_OUTPUT" | jq -r '.[0].artifacts.buildUrl // empty')
+          if [ -n "$BUILD_URL" ] && [ "$BUILD_URL" != "null" ]; then
+            echo "Build URL found: $BUILD_URL"
+            curl -L -o WorkoutGamifier.apk "$BUILD_URL"
+            echo "APK downloaded successfully"
+          else
+            echo "No build URL found in the response"
+            # Try alternative approach - get the build ID from the build command output
+            echo "Attempting to find build artifacts using alternative method..."
+            npx eas build:list --platform=android --limit=5
+            exit 1
+          fi
         else
-          echo "Failed to get APK download URL"
+          echo "Build list output is not valid JSON:"
+          echo "$BUILD_LIST_OUTPUT"
+          # Try alternative approach without JSON parsing
+          echo "Attempting alternative download method..."
+          npx eas build:list --platform=android --limit=1
           exit 1
         fi
       env:
