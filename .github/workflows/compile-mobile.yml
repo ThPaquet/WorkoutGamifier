@@ -79,8 +79,32 @@ jobs:
           npx eas build:configure --platform android --non-interactive
         fi
         
+        # Create or update eas.json to include a development profile for CI
+        node -e "
+          const fs = require('fs');
+          let config = {};
+          if (fs.existsSync('eas.json')) {
+            config = JSON.parse(fs.readFileSync('eas.json', 'utf8'));
+          }
+          if (!config.build) config.build = {};
+          config.build.development = {
+            android: {
+              buildType: 'apk',
+              gradleCommand: ':app:assembleDebug'
+            }
+          };
+          if (!config.build.preview) config.build.preview = {};
+          config.build.preview.android = {
+            buildType: 'apk',
+            gradleCommand: ':app:assembleRelease'
+          };
+          fs.writeFileSync('eas.json', JSON.stringify(config, null, 2));
+        "
+        
         # Show current configuration for debugging
-        echo "Current app.json configuration:"
+        echo "Current eas.json configuration:"
+        cat eas.json
+        echo "Current app.json android configuration:"
         cat app.json | grep -A 10 -B 5 "android" || echo "No android config found"
       env:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -89,8 +113,8 @@ jobs:
     - name: Build APK
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
-        # Build for Android
-        npx eas build --platform android --profile preview --non-interactive --wait
+        # Build for Android using development profile (doesn't require credentials)
+        npx eas build --platform android --profile development --non-interactive --wait
       env:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         CI: 1
