@@ -84,7 +84,8 @@ jobs:
     - name: Generate debug keystore
       working-directory: ./mobile-app/WorkoutGamifierMobile/android/app
       run: |
-        # Create debug keystore for signing
+        # Remove existing keystore if it exists, then create a new one
+        rm -f debug.keystore
         keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
         echo "Debug keystore created"
         ls -la debug.keystore
