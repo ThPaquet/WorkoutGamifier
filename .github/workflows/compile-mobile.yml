@@ -74,7 +74,7 @@ jobs:
           fi
         fi
         
-        # Create eas.json with local build configuration
+        # Create eas.json with local credentials configuration
         echo '{
           "cli": {
             "version": ">= 5.4.0",
@@ -90,10 +90,10 @@ jobs:
             "local": {
               "android": {
                 "buildType": "apk",
-                "gradleCommand": ":app:assembleRelease"
+                "gradleCommand": ":app:assembleDebug"
               },
               "env": {
-                "NODE_ENV": "production"
+                "NODE_ENV": "development"
               }
             },
             "preview": {
@@ -118,14 +118,26 @@ jobs:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         CI: 1
 
+    - name: Generate debug keystore
+      working-directory: ./mobile-app/WorkoutGamifierMobile
+      run: |
+        # Create a debug keystore for local signing
+        mkdir -p android/app
+        keytool -genkey -v -keystore android/app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+        echo "Debug keystore created"
+      env:
+        EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        CI: 1
+
     - name: Build APK locally
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
-        # Try building locally instead of using EAS remote build
+        # Try building locally with debug configuration
         npx eas build --platform android --profile local --local --non-interactive
       env:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         CI: 1
+        EAS_LOCAL_BUILD_SKIP_CLEANUP: 1
 
     - name: Find and upload APK
       working-directory: ./mobile-app/WorkoutGamifierMobile
