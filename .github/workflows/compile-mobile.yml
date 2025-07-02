@@ -63,7 +63,7 @@ jobs:
         fi
         
         # Prebuild the native Android project
-        npx expo prebuild --platform android --clear
+        npx expo prebuild --platform android
         
         echo "Android project structure:"
         ls -la android/
