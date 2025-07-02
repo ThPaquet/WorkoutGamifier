@@ -55,10 +55,33 @@ jobs:
     - name: Configure EAS Build
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
+        # Check if app.json or app.config.js exists and has android.package
+        if [ -f app.json ]; then
+          echo "Found app.json, checking android.package..."
+          if ! grep -q '"package"' app.json; then
+            echo "Adding android.package to app.json..."
+            # Backup original
+            cp app.json app.json.backup
+            # Add android.package if missing
+            node -e "
+              const fs = require('fs');
+              const config = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+              if (!config.expo.android) config.expo.android = {};
+              if (!config.expo.android.package) config.expo.android.package = 'com.workoutgamifier.app';
+              fs.writeFileSync('app.json', JSON.stringify(config, null, 2));
+            "
+            echo "Updated app.json with android.package"
+          fi
+        fi
+        
         # Initialize EAS configuration if it doesn't exist
         if [ ! -f eas.json ]; then
           npx eas build:configure --platform android --non-interactive
         fi
+        
+        # Show current configuration for debugging
+        echo "Current app.json configuration:"
+        cat app.json | grep -A 10 -B 5 "android" || echo "No android config found"
       env:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         CI: 1
