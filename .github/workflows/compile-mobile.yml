@@ -74,26 +74,26 @@ jobs:
           fi
         fi
         
-        # Create eas.json with local credentials configuration
+        # Create eas.json with proper standalone configuration
         echo '{
           "cli": {
             "version": ">= 5.4.0"
           },
           "build": {
             "development": {
+              "developmentClient": true,
               "android": {
                 "buildType": "apk",
                 "gradleCommand": ":app:assembleDebug"
-              },
-              "channel": "development"
+              }
             },
-            "local-debug": {
+            "standalone-debug": {
               "android": {
                 "buildType": "apk",
                 "gradleCommand": ":app:assembleDebug",
                 "withoutCredentials": true
               },
-              "channel": "development"
+              "channel": "production"
             },
             "preview": {
               "android": {
@@ -120,8 +120,8 @@ jobs:
     - name: Build APK
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
-        # Build for Android using local-debug profile (no credentials required)
-        npx eas build --platform android --profile local-debug --non-interactive --wait
+        # Build for Android using standalone-debug profile (standalone APK without credentials)
+        npx eas build --platform android --profile standalone-debug --non-interactive --wait
       env:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         CI: 1
