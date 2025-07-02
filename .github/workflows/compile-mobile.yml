@@ -1,11 +1,11 @@
-name: Build Pure React Native APK
+name: Build Android APK
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   build:
@@ -22,6 +22,16 @@ jobs:
         cache: 'npm'
         cache-dependency-path: WorkoutGamifierMobile/package-lock.json
 
+    - name: Setup Expo CLI
+      run: npm install -g @expo/cli
+
+    - name: Install dependencies
+      working-directory: ./WorkoutGamifierMobile
+      run: npm ci
+
+    - name: Setup EAS CLI
+      run: npm install -g eas-cli
+
     - name: Setup Java JDK
       uses: actions/setup-java@v4
       with:
@@ -30,48 +40,53 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
-      with:
-        api-level: 33
-        build-tools: 33.0.0
 
-    - name: Install dependencies
+    - name: Create Expo account and login
       working-directory: ./WorkoutGamifierMobile
-      run: npm ci
-
-    - name: Cache Gradle
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-          WorkoutGamifierMobile/android/.gradle
-        key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-
-    - name: Make gradlew executable
-      working-directory: ./WorkoutGamifierMobile/android
-      run: chmod +x ./gradlew
-
-    - name: Generate debug keystore
-      working-directory: ./WorkoutGamifierMobile/android/app
       run: |
-        keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+        # You'll need to set EXPO_TOKEN in your GitHub secrets
+        echo $EXPO_TOKEN | expo login --non-interactive
+      env:
+        EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+    - name: Configure EAS Build
+      working-directory: ./WorkoutGamifierMobile
+      run: |
+        # Initialize EAS configuration if it doesn't exist
+        if [ ! -f eas.json ]; then
+          eas build:configure --platform android --non-interactive
+        fi
 
     - name: Build APK
-      working-directory: ./WorkoutGamifierMobile/android
-      run: ./gradlew assembleDebug
-
-    - name: Sign APK (optional - for release)
-      working-directory: ./WorkoutGamifierMobile/android
+      working-directory: ./WorkoutGamifierMobile
       run: |
-        # For release builds, you'd configure signing here
-        # This step is optional for debug builds
-        echo "Debug APK built successfully"
+        # Build for Android
+        eas build --platform android --profile preview --non-interactive --wait
+      env:
+        EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-    - name: Upload APK
+    - name: Download APK
+      working-directory: ./WorkoutGamifierMobile
+      run: |
+        # Get the latest build URL and download the APK
+        BUILD_URL=$(eas build:list --platform=android --limit=1 --json | jq -r '.[0].artifacts.buildUrl')
+        echo "Build URL: $BUILD_URL"
+        
+        if [ "$BUILD_URL" != "null" ] && [ -n "$BUILD_URL" ]; then
+          curl -L -o WorkoutGamifier.apk "$BUILD_URL"
+          echo "APK downloaded successfully"
+        else
+          echo "Failed to get APK download URL"
+          exit 1
+        fi
+      env:
+        EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+    - name: Upload APK as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: WorkoutGamifier-Debug-APK
-        path: WorkoutGamifierMobile/android/app/build/outputs/apk/debug/app-debug.apk
+        name: WorkoutGamifier-APK
+        path: WorkoutGamifierMobile/WorkoutGamifier.apk
         retention-days: 30
 
     - name: Create Release (on main branch)
@@ -81,16 +96,20 @@ jobs:
         tag_name: v${{ github.run_number }}
         name: WorkoutGamifier v${{ github.run_number }}
         body: |
-          Debug build of WorkoutGamifier Mobile App
+          Automated build of WorkoutGamifier Mobile App
           
           📱 **Installation Instructions:**
           1. Download the APK file below
-          2. Enable "Install from unknown sources" in Android settings
+          2. Enable "Install from unknown sources" in your Android settings
           3. Install the APK on your device
           
-          ⚠️ **Note:** This is a debug build for testing purposes.
-        files: WorkoutGamifierMobile/android/app/build/outputs/apk/debug/app-debug.apk
+          🎮 **App Features:**
+          - 10+ built-in exercises
+          - 3 default workout pools  
+          - 8 default point-earning actions
+          - Complete offline functionality
+        files: WorkoutGamifierMobile/WorkoutGamifier.apk
         draft: false
-        prerelease: true
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
