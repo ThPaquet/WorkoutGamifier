@@ -74,16 +74,26 @@ jobs:
           fi
         fi
         
-        # Try to use the preview profile first (it should work without manual credential setup)
+        # Create eas.json with local build configuration
         echo '{
           "cli": {
-            "version": ">= 5.4.0"
+            "version": ">= 5.4.0",
+            "appVersionSource": "local"
           },
           "build": {
             "development": {
               "developmentClient": true,
               "android": {
                 "buildType": "apk"
+              }
+            },
+            "local": {
+              "android": {
+                "buildType": "apk",
+                "gradleCommand": ":app:assembleRelease"
+              },
+              "env": {
+                "NODE_ENV": "production"
               }
             },
             "preview": {
@@ -108,47 +118,29 @@ jobs:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         CI: 1
 
-    - name: Build APK
+    - name: Build APK locally
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
-        # Use the standard preview profile which should create a standalone APK
-        npx eas build --platform android --profile preview --non-interactive --wait
+        # Try building locally instead of using EAS remote build
+        npx eas build --platform android --profile local --local --non-interactive
       env:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         CI: 1
 
-    - name: Download APK
+    - name: Find and upload APK
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
-        # Wait a moment for the build to be fully processed
-        sleep 10
-        
-        # Get the latest build info with better error handling
-        echo "Fetching build list..."
-        BUILD_LIST_OUTPUT=$(npx eas build:list --platform=android --limit=1 --json 2>&1)
-        echo "Build list output:"
-        echo "$BUILD_LIST_OUTPUT"
-        
-        # Check if the output is valid JSON
-        if echo "$BUILD_LIST_OUTPUT" | jq empty 2>/dev/null; then
-          BUILD_URL=$(echo "$BUILD_LIST_OUTPUT" | jq -r '.[0].artifacts.buildUrl // empty')
-          if [ -n "$BUILD_URL" ] && [ "$BUILD_URL" != "null" ]; then
-            echo "Build URL found: $BUILD_URL"
-            curl -L -o WorkoutGamifier.apk "$BUILD_URL"
-            echo "APK downloaded successfully"
-          else
-            echo "No build URL found in the response"
-            # Try alternative approach - get the build ID from the build command output
-            echo "Attempting to find build artifacts using alternative method..."
-            npx eas build:list --platform=android --limit=5
-            exit 1
-          fi
+        # Find the generated APK file
+        APK_PATH=$(find . -name "*.apk" -type f | head -1)
+        if [ -n "$APK_PATH" ]; then
+          echo "Found APK at: $APK_PATH"
+          cp "$APK_PATH" WorkoutGamifier.apk
+          echo "APK copied successfully"
+          ls -la WorkoutGamifier.apk
         else
-          echo "Build list output is not valid JSON:"
-          echo "$BUILD_LIST_OUTPUT"
-          # Try alternative approach without JSON parsing
-          echo "Attempting alternative download method..."
-          npx eas build:list --platform=android --limit=1
+          echo "No APK file found"
+          echo "Looking for build outputs:"
+          find . -name "*.apk" -o -name "*.aab" | head -10
           exit 1
         fi
       env:
