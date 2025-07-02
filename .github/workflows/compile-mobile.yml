@@ -74,7 +74,7 @@ jobs:
           fi
         fi
         
-        # Create eas.json with proper standalone configuration
+        # Try to use the preview profile first (it should work without manual credential setup)
         echo '{
           "cli": {
             "version": ">= 5.4.0"
@@ -83,17 +83,8 @@ jobs:
             "development": {
               "developmentClient": true,
               "android": {
-                "buildType": "apk",
-                "gradleCommand": ":app:assembleDebug"
+                "buildType": "apk"
               }
-            },
-            "standalone-debug": {
-              "android": {
-                "buildType": "apk",
-                "gradleCommand": ":app:assembleDebug",
-                "withoutCredentials": true
-              },
-              "channel": "production"
             },
             "preview": {
               "android": {
@@ -120,8 +111,8 @@ jobs:
     - name: Build APK
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
-        # Build for Android using standalone-debug profile (standalone APK without credentials)
-        npx eas build --platform android --profile standalone-debug --non-interactive --wait
+        # Use the standard preview profile which should create a standalone APK
+        npx eas build --platform android --profile preview --non-interactive --wait
       env:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         CI: 1
