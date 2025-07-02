@@ -20,13 +20,13 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: WorkoutGamifierMobile/package-lock.json
+        cache-dependency-path: ./mobile-app/WorkoutGamifierMobile/package-lock.json
 
     - name: Setup Expo CLI
       run: npm install -g @expo/cli
 
     - name: Install dependencies
-      working-directory: ./WorkoutGamifierMobile
+      working-directory: ./mobile-app/WorkoutGamifierMobile
       run: npm ci
 
     - name: Setup EAS CLI
@@ -42,7 +42,7 @@ jobs:
       uses: android-actions/setup-android@v3
 
     - name: Create Expo account and login
-      working-directory: ./WorkoutGamifierMobile
+      working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
         # You'll need to set EXPO_TOKEN in your GitHub secrets
         echo $EXPO_TOKEN | expo login --non-interactive
@@ -50,7 +50,7 @@ jobs:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
     - name: Configure EAS Build
-      working-directory: ./WorkoutGamifierMobile
+      working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
         # Initialize EAS configuration if it doesn't exist
         if [ ! -f eas.json ]; then
@@ -58,7 +58,7 @@ jobs:
         fi
 
     - name: Build APK
-      working-directory: ./WorkoutGamifierMobile
+      working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
         # Build for Android
         eas build --platform android --profile preview --non-interactive --wait
@@ -66,7 +66,7 @@ jobs:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
     - name: Download APK
-      working-directory: ./WorkoutGamifierMobile
+      working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
         # Get the latest build URL and download the APK
         BUILD_URL=$(eas build:list --platform=android --limit=1 --json | jq -r '.[0].artifacts.buildUrl')
@@ -86,7 +86,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: WorkoutGamifier-APK
-        path: WorkoutGamifierMobile/WorkoutGamifier.apk
+        path: mobile-app/WorkoutGamifierMobile/WorkoutGamifier.apk
         retention-days: 30
 
     - name: Create Release (on main branch)
@@ -108,7 +108,7 @@ jobs:
           - 3 default workout pools  
           - 8 default point-earning actions
           - Complete offline functionality
-        files: WorkoutGamifierMobile/WorkoutGamifier.apk
+        files: mobile-app/WorkoutGamifierMobile/WorkoutGamifier.apk
         draft: false
         prerelease: false
       env:
