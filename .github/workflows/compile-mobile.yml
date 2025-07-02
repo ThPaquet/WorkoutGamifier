@@ -20,17 +20,19 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: ./mobile-app/WorkoutGamifierMobile/package-lock.json
-
-    - name: Setup Expo CLI
-      run: npm install -g @expo/cli
+        cache-dependency-path: mobile-app/WorkoutGamifierMobile/package-lock.json
 
     - name: Install dependencies
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: npm ci
 
-    - name: Setup EAS CLI
-      run: npm install -g eas-cli
+    - name: Setup Expo and EAS CLI
+      run: |
+        npm install -g @expo/cli eas-cli
+        echo "Expo CLI version:"
+        npx expo --version
+        echo "EAS CLI version:"
+        npx eas --version
 
     - name: Setup Java JDK
       uses: actions/setup-java@v4
@@ -41,11 +43,11 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Create Expo account and login
+    - name: Expo login
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
-        # You'll need to set EXPO_TOKEN in your GitHub secrets
-        echo $EXPO_TOKEN | expo login --non-interactive
+        # Login to Expo using the token
+        npx expo login --non-interactive
       env:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
@@ -54,14 +56,14 @@ jobs:
       run: |
         # Initialize EAS configuration if it doesn't exist
         if [ ! -f eas.json ]; then
-          eas build:configure --platform android --non-interactive
+          npx eas build:configure --platform android --non-interactive
         fi
 
     - name: Build APK
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
         # Build for Android
-        eas build --platform android --profile preview --non-interactive --wait
+        npx eas build --platform android --profile preview --non-interactive --wait
       env:
         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
@@ -69,7 +71,7 @@ jobs:
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
         # Get the latest build URL and download the APK
-        BUILD_URL=$(eas build:list --platform=android --limit=1 --json | jq -r '.[0].artifacts.buildUrl')
+        BUILD_URL=$(npx eas build:list --platform=android --limit=1 --json | jq -r '.[0].artifacts.buildUrl')
         echo "Build URL: $BUILD_URL"
         
         if [ "$BUILD_URL" != "null" ] && [ -n "$BUILD_URL" ]; then
