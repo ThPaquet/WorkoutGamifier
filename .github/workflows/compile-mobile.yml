@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK (Pure React Native)
 
 on:
   push:
@@ -22,18 +22,6 @@ jobs:
         cache: 'npm'
         cache-dependency-path: mobile-app/WorkoutGamifierMobile/package-lock.json
 
-    - name: Install dependencies
-      working-directory: ./mobile-app/WorkoutGamifierMobile
-      run: npm ci
-
-    - name: Setup Expo and EAS CLI
-      run: |
-        npm install -g @expo/cli eas-cli
-        echo "Expo CLI version:"
-        npx expo --version
-        echo "EAS CLI version:"
-        npx eas --version
-
     - name: Setup Java JDK
       uses: actions/setup-java@v4
       with:
@@ -42,27 +30,27 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        api-level: 33
+        build-tools: 33.0.0
 
-    - name: Verify Expo authentication
+    - name: Install dependencies
+      working-directory: ./mobile-app/WorkoutGamifierMobile
+      run: npm ci
+
+    - name: Setup Expo and prebuild
       working-directory: ./mobile-app/WorkoutGamifierMobile
       run: |
-        # Verify authentication using EXPO_TOKEN
-        npx expo whoami
-      env:
-        EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        CI: 1
-
-    - name: Configure EAS Build
-      working-directory: ./mobile-app/WorkoutGamifierMobile
-      run: |
-        # Check if app.json or app.config.js exists and has android.package
+        # Install Expo CLI
+        npm install -g @expo/cli
+        echo "Expo CLI version:"
+        npx expo --version
+        
+        # Add android package to app.json if missing
         if [ -f app.json ]; then
-          echo "Found app.json, checking android.package..."
+          echo "Checking app.json for android.package..."
           if ! grep -q '"package"' app.json; then
             echo "Adding android.package to app.json..."
-            # Backup original
-            cp app.json app.json.backup
-            # Add android.package if missing
             node -e "
               const fs = require('fs');
               const config = JSON.parse(fs.readFileSync('app.json', 'utf8'));
@@ -74,90 +62,66 @@ jobs:
           fi
         fi
         
-        # Create eas.json with local credentials configuration
-        echo '{
-          "cli": {
-            "version": ">= 5.4.0",
-            "appVersionSource": "local"
-          },
-          "build": {
-            "development": {
-              "developmentClient": true,
-              "android": {
-                "buildType": "apk"
-              }
-            },
-            "local": {
-              "android": {
-                "buildType": "apk",
-                "gradleCommand": ":app:assembleDebug"
-              },
-              "env": {
-                "NODE_ENV": "development"
-              }
-            },
-            "preview": {
-              "android": {
-                "buildType": "apk"
-              }
-            },
-            "production": {
-              "android": {
-                "buildType": "app-bundle"
-              }
-            }
-          }
-        }' > eas.json
+        # Prebuild the native Android project
+        npx expo prebuild --platform android --clear
         
-        # Show current configuration for debugging
-        echo "Created eas.json configuration:"
-        cat eas.json
-        echo "Current app.json android configuration:"
-        cat app.json | grep -A 10 -B 5 "android" || echo "No android config found"
-      env:
-        EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        CI: 1
+        echo "Android project structure:"
+        ls -la android/
+
+    - name: Cache Gradle
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          mobile-app/WorkoutGamifierMobile/android/.gradle
+        key: gradle-${{ runner.os }}-${{ hashFiles('**/gradle-wrapper.properties', '**/*.gradle*') }}
+
+    - name: Make gradlew executable
+      working-directory: ./mobile-app/WorkoutGamifierMobile/android
+      run: chmod +x ./gradlew
 
     - name: Generate debug keystore
-      working-directory: ./mobile-app/WorkoutGamifierMobile
+      working-directory: ./mobile-app/WorkoutGamifierMobile/android/app
       run: |
-        # Create a debug keystore for local signing
-        mkdir -p android/app
-        keytool -genkey -v -keystore android/app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+        # Create debug keystore for signing
+        keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
         echo "Debug keystore created"
-      env:
-        EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        CI: 1
+        ls -la debug.keystore
 
-    - name: Build APK locally
-      working-directory: ./mobile-app/WorkoutGamifierMobile
+    - name: Build APK with Gradle
+      working-directory: ./mobile-app/WorkoutGamifierMobile/android
       run: |
-        # Try building locally with debug configuration
-        npx eas build --platform android --profile local --local --non-interactive
+        # Build the APK using Gradle directly
+        ./gradlew assembleRelease --no-daemon --stacktrace
+        
+        echo "Build completed. Looking for APK files:"
+        find . -name "*.apk" -type f
       env:
-        EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        CI: 1
-        EAS_LOCAL_BUILD_SKIP_CLEANUP: 1
+        GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"
 
-    - name: Find and upload APK
-      working-directory: ./mobile-app/WorkoutGamifierMobile
+    - name: Sign APK
+      working-directory: ./mobile-app/WorkoutGamifierMobile/android
       run: |
-        # Find the generated APK file
-        APK_PATH=$(find . -name "*.apk" -type f | head -1)
-        if [ -n "$APK_PATH" ]; then
-          echo "Found APK at: $APK_PATH"
-          cp "$APK_PATH" WorkoutGamifier.apk
-          echo "APK copied successfully"
-          ls -la WorkoutGamifier.apk
+        # Find the unsigned APK
+        UNSIGNED_APK=$(find . -name "*-release-unsigned.apk" -o -name "*-release.apk" | head -1)
+        if [ -n "$UNSIGNED_APK" ]; then
+          echo "Found APK: $UNSIGNED_APK"
+          
+          # Sign the APK with debug keystore
+          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore app/debug.keystore -storepass android -keypass android "$UNSIGNED_APK" androiddebugkey
+          
+          # Zipalign the APK
+          $ANDROID_HOME/build-tools/33.0.0/zipalign -v 4 "$UNSIGNED_APK" ../WorkoutGamifier.apk
+          
+          echo "APK signed and aligned successfully"
+          ls -la ../WorkoutGamifier.apk
         else
-          echo "No APK file found"
-          echo "Looking for build outputs:"
-          find . -name "*.apk" -o -name "*.aab" | head -10
+          echo "No unsigned APK found"
+          echo "Available files:"
+          find . -name "*.apk" -type f
           exit 1
         fi
-      env:
-        EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        CI: 1
 
     - name: Upload APK as artifact
       uses: actions/upload-artifact@v4
@@ -173,7 +137,7 @@ jobs:
         tag_name: v${{ github.run_number }}
         name: WorkoutGamifier v${{ github.run_number }}
         body: |
-          Automated build of WorkoutGamifier Mobile App
+          Standalone build of WorkoutGamifier Mobile App
           
           📱 **Installation Instructions:**
           1. Download the APK file below
@@ -185,6 +149,8 @@ jobs:
           - 3 default workout pools  
           - 8 default point-earning actions
           - Complete offline functionality
+          
+          ⚠️ **Note:** This is a debug-signed APK for testing purposes.
         files: mobile-app/WorkoutGamifierMobile/WorkoutGamifier.apk
         draft: false
         prerelease: false
