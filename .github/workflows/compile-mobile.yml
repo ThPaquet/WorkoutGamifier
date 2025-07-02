@@ -1,0 +1,96 @@
+name: Build Pure React Native APK
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: WorkoutGamifierMobile/package-lock.json
+
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 33
+        build-tools: 33.0.0
+
+    - name: Install dependencies
+      working-directory: ./WorkoutGamifierMobile
+      run: npm ci
+
+    - name: Cache Gradle
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          WorkoutGamifierMobile/android/.gradle
+        key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+    - name: Make gradlew executable
+      working-directory: ./WorkoutGamifierMobile/android
+      run: chmod +x ./gradlew
+
+    - name: Generate debug keystore
+      working-directory: ./WorkoutGamifierMobile/android/app
+      run: |
+        keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+
+    - name: Build APK
+      working-directory: ./WorkoutGamifierMobile/android
+      run: ./gradlew assembleDebug
+
+    - name: Sign APK (optional - for release)
+      working-directory: ./WorkoutGamifierMobile/android
+      run: |
+        # For release builds, you'd configure signing here
+        # This step is optional for debug builds
+        echo "Debug APK built successfully"
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: WorkoutGamifier-Debug-APK
+        path: WorkoutGamifierMobile/android/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 30
+
+    - name: Create Release (on main branch)
+      if: github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ github.run_number }}
+        name: WorkoutGamifier v${{ github.run_number }}
+        body: |
+          Debug build of WorkoutGamifier Mobile App
+          
+          📱 **Installation Instructions:**
+          1. Download the APK file below
+          2. Enable "Install from unknown sources" in Android settings
+          3. Install the APK on your device
+          
+          ⚠️ **Note:** This is a debug build for testing purposes.
+        files: WorkoutGamifierMobile/android/app/build/outputs/apk/debug/app-debug.apk
+        draft: false
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
