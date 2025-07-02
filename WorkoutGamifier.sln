@@ -12,12 +12,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkoutGamifier.API", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkoutGamifier.Domain.Tests", "tests\WorkoutGamifier.Domain.Tests\WorkoutGamifier.Domain.Tests.csproj", "{E5F6G7H8-I9J0-1234-EF01-567890123456}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkoutGamifier.Application.Tests", "tests\WorkoutGamifier.Application.Tests\WorkoutGamifier.Application.Tests.csproj", "{F6G7H8I9-J0K1-2345-F012-678901234567}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkoutGamifier.Infrastructure.Tests", "tests\WorkoutGamifier.Infrastructure.Tests\WorkoutGamifier.Infrastructure.Tests.csproj", "{G7H8I9J0-K1L2-3456-0123-789012345678}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkoutGamifier.API.Tests", "tests\WorkoutGamifier.API.Tests\WorkoutGamifier.API.Tests.csproj", "{H8I9J0K1-L2M3-4567-1234-890123456789}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
