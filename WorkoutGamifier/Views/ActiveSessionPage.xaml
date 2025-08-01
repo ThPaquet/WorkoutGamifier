@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="WorkoutGamifier.Views.ActiveSessionPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Active Session">
+    
+    <Grid RowDefinitions="Auto,*,Auto" Padding="20">
+        
+        <!-- Header with Session Info -->
+        <Frame Grid.Row="0" 
+               BackgroundColor="LightBlue" 
+               CornerRadius="10" 
+               Padding="15"
+               Margin="0,0,0,15">
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="5">
+                    <Label Text="{Binding SessionName}" 
+                           FontSize="20" 
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding PoolName, StringFormat='Pool: {0}'}" 
+                           FontSize="14" 
+                           TextColor="Gray" />
+                    <Label Text="{Binding ElapsedTime, StringFormat='Duration: {0}'}" 
+                           FontSize="14" 
+                           TextColor="Gray" />
+                </VerticalStackLayout>
+                
+                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                    <Label Text="Points" 
+                           FontSize="14" 
+                           TextColor="Gray" 
+                           HorizontalOptions="Center" />
+                    <Label Text="{Binding CurrentPoints}" 
+                           FontSize="24" 
+                           FontAttributes="Bold" 
+                           TextColor="Green"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Grid>
+        </Frame>
+
+        <!-- Main Content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="20">
+                
+                <!-- Actions Section -->
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Earn Points" 
+                           FontSize="20" 
+                           FontAttributes="Bold" />
+                    
+                    <CollectionView ItemsSource="{Binding AvailableActions}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="5">
+                                    <Frame BorderColor="LightGray" 
+                                           CornerRadius="8" 
+                                           Padding="15" 
+                                           Margin="0,0,0,5">
+                                        
+                                        <Grid ColumnDefinitions="*,Auto,Auto">
+                                            <VerticalStackLayout Grid.Column="0" Spacing="5">
+                                                <Label Text="{Binding Description}" 
+                                                       FontSize="16" />
+                                                <Label Text="{Binding PointValue, StringFormat='+{0} points'}" 
+                                                       FontSize="14" 
+                                                       TextColor="Green" />
+                                            </VerticalStackLayout>
+                                            
+                                            <Label Grid.Column="1" 
+                                                   Text="{Binding CompletionCount, StringFormat='x{0}'}" 
+                                                   FontSize="14" 
+                                                   TextColor="Blue"
+                                                   VerticalOptions="Center"
+                                                   Margin="0,0,10,0"
+                                                   IsVisible="{Binding HasCompletions}" />
+                                            
+                                            <Button Grid.Column="2" 
+                                                    Text="Complete"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.CompleteActionCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    BackgroundColor="Green"
+                                                    CornerRadius="5"
+                                                    FontSize="12" />
+                                        </Grid>
+                                    </Frame>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                        
+                        <CollectionView.EmptyView>
+                            <Label Text="No actions available. Create some actions first!" 
+                                   FontSize="16" 
+                                   TextColor="Gray" 
+                                   HorizontalOptions="Center" 
+                                   VerticalOptions="Center" />
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+                </VerticalStackLayout>
+                
+                <!-- Workout Redemption Section -->
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Get Workout" 
+                           FontSize="20" 
+                           FontAttributes="Bold" />
+                    
+                    <Frame BorderColor="Orange" 
+                           CornerRadius="10" 
+                           Padding="15">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="Spend points to get a random workout from your selected pool" 
+                                   FontSize="14" 
+                                   TextColor="Gray" />
+                            
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Grid.Column="0">
+                                    <Label Text="Workout Cost" 
+                                           FontSize="14" 
+                                           TextColor="Gray" />
+                                    <Stepper x:Name="WorkoutCostStepper"
+                                             Minimum="1" 
+                                             Maximum="100" 
+                                             Value="{Binding WorkoutCost}" 
+                                             Increment="5" />
+                                    <Label Text="{Binding WorkoutCost, StringFormat='{0} points'}" 
+                                           FontSize="16" 
+                                           FontAttributes="Bold" 
+                                           TextColor="Orange" />
+                                </VerticalStackLayout>
+                                
+                                <Button Grid.Column="1" 
+                                        Text="Get Workout"
+                                        Command="{Binding GetWorkoutCommand}"
+                                        BackgroundColor="Orange"
+                                        IsEnabled="{Binding CanGetWorkout}"
+                                        VerticalOptions="Center" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Frame>
+                </VerticalStackLayout>
+                
+                <!-- Current Workout Display -->
+                <VerticalStackLayout Spacing="15" IsVisible="{Binding HasCurrentWorkout}">
+                    <Label Text="Current Workout" 
+                           FontSize="20" 
+                           FontAttributes="Bold" />
+                    
+                    <Frame BorderColor="Green" 
+                           CornerRadius="10" 
+                           Padding="20"
+                           BackgroundColor="LightGreen">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="{Binding CurrentWorkout.Name}" 
+                                   FontSize="22" 
+                                   FontAttributes="Bold" 
+                                   HorizontalOptions="Center" />
+                            
+                            <Label Text="{Binding CurrentWorkout.Description}" 
+                                   FontSize="16" 
+                                   HorizontalOptions="Center" 
+                                   HorizontalTextAlignment="Center" />
+                            
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="20" Margin="0,10,0,0">
+                                <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center">
+                                    <Label Text="Difficulty" 
+                                           FontSize="14" 
+                                           TextColor="Gray" 
+                                           HorizontalOptions="Center" />
+                                    <Label Text="{Binding CurrentWorkout.Difficulty}" 
+                                           FontSize="16" 
+                                           FontAttributes="Bold" 
+                                           HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                                
+                                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                                    <Label Text="Duration" 
+                                           FontSize="14" 
+                                           TextColor="Gray" 
+                                           HorizontalOptions="Center" />
+                                    <Label Text="{Binding CurrentWorkout.DurationMinutes, StringFormat='{0} min'}" 
+                                           FontSize="16" 
+                                           FontAttributes="Bold" 
+                                           HorizontalOptions="Center" />
+                                </VerticalStackLayout>
+                            </Grid>
+                            
+                            <BoxView HeightRequest="1" 
+                                     BackgroundColor="Gray" 
+                                     Margin="0,15,0,10" />
+                            
+                            <Label Text="Instructions" 
+                                   FontSize="18" 
+                                   FontAttributes="Bold" />
+                            
+                            <Label Text="{Binding CurrentWorkout.Instructions}" 
+                                   FontSize="16" />
+                            
+                            <Button Text="Mark as Done" 
+                                    Command="{Binding MarkWorkoutDoneCommand}"
+                                    BackgroundColor="DarkGreen"
+                                    Margin="0,15,0,0" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </VerticalStackLayout>
+                
+                <!-- Workout History -->
+                <VerticalStackLayout Spacing="15" IsVisible="{Binding HasWorkoutHistory}">
+                    <Label Text="Workouts Received" 
+                           FontSize="20" 
+                           FontAttributes="Bold" />
+                    
+                    <CollectionView ItemsSource="{Binding WorkoutHistory}" MaximumHeightRequest="200">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="5">
+                                    <Frame BorderColor="LightGray" 
+                                           CornerRadius="5" 
+                                           Padding="10" 
+                                           Margin="0,0,0,5">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <VerticalStackLayout Grid.Column="0">
+                                                <Label Text="{Binding WorkoutName}" 
+                                                       FontSize="14" 
+                                                       FontAttributes="Bold" />
+                                                <Label Text="{Binding ReceivedAt, StringFormat='Received: {0:HH:mm}'}" 
+                                                       FontSize="12" 
+                                                       TextColor="Gray" />
+                                            </VerticalStackLayout>
+                                            
+                                            <Label Grid.Column="1" 
+                                                   Text="{Binding PointsSpent, StringFormat='-{0} pts'}" 
+                                                   FontSize="12" 
+                                                   TextColor="Red"
+                                                   VerticalOptions="Center" />
+                                        </Grid>
+                                    </Frame>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Bottom Actions -->
+        <Grid Grid.Row="2" 
+              ColumnDefinitions="*,*" 
+              ColumnSpacing="15" 
+              Margin="0,15,0,0">
+            
+            <Button Grid.Column="0" 
+                    Text="Pause Session" 
+                    Command="{Binding PauseSessionCommand}" 
+                    BackgroundColor="Orange" />
+            
+            <Button Grid.Column="1" 
+                    Text="End Session" 
+                    Command="{Binding EndSessionCommand}" 
+                    BackgroundColor="Red" />
+        </Grid>
+
+        <!-- Loading Indicator -->
+        <ActivityIndicator Grid.RowSpan="3" 
+                           IsVisible="{Binding IsBusy}" 
+                           IsRunning="{Binding IsBusy}" 
+                           HorizontalOptions="Center" 
+                           VerticalOptions="Center" />
+    </Grid>
+</ContentPage>

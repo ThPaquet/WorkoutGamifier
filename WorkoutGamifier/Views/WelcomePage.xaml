@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="WorkoutGamifier.Views.WelcomePage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Welcome to WorkoutGamifier"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{DynamicResource Primary}">
+    
+    <ScrollView>
+        <StackLayout Padding="40" Spacing="30" VerticalOptions="CenterAndExpand">
+            
+            <!-- App Logo/Icon -->
+            <Image Source="workout_icon.png" 
+                   WidthRequest="120" 
+                   HeightRequest="120"
+                   HorizontalOptions="Center" />
+            
+            <!-- Welcome Title -->
+            <Label Text="Welcome to WorkoutGamifier!" 
+                   FontSize="28" 
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center" />
+            
+            <!-- App Description -->
+            <Label TextColor="White" 
+                   FontSize="16"
+                   HorizontalTextAlignment="Center"
+                   LineHeight="1.4">
+                <Label.Text>
+                    Transform your fitness journey into an exciting game! Earn points by completing real-life actions and spend them to unlock random workouts from your custom pools.
+                </Label.Text>
+            </Label>
+            
+            <!-- Features List -->
+            <StackLayout Spacing="15">
+                <Label Text="What you can do:" 
+                       FontSize="18" 
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center" />
+                
+                <StackLayout Spacing="10">
+                    <StackLayout Orientation="Horizontal" Spacing="10">
+                        <Label Text="🎯" FontSize="20" VerticalOptions="Center" />
+                        <Label Text="Create custom workout pools for different fitness goals" 
+                               TextColor="White" 
+                               FontSize="14"
+                               VerticalOptions="Center"
+                               FlexLayout.Grow="1" />
+                    </StackLayout>
+                    
+                    <StackLayout Orientation="Horizontal" Spacing="10">
+                        <Label Text="⭐" FontSize="20" VerticalOptions="Center" />
+                        <Label Text="Define actions and earn points for completing them" 
+                               TextColor="White" 
+                               FontSize="14"
+                               VerticalOptions="Center"
+                               FlexLayout.Grow="1" />
+                    </StackLayout>
+                    
+                    <StackLayout Orientation="Horizontal" Spacing="10">
+                        <Label Text="🏃" FontSize="20" VerticalOptions="Center" />
+                        <Label Text="Start sessions and get random workouts as rewards" 
+                               TextColor="White" 
+                               FontSize="14"
+                               VerticalOptions="Center"
+                               FlexLayout.Grow="1" />
+                    </StackLayout>
+                    
+                    <StackLayout Orientation="Horizontal" Spacing="10">
+                        <Label Text="📊" FontSize="20" VerticalOptions="Center" />
+                        <Label Text="Track your progress and view detailed statistics" 
+                               TextColor="White" 
+                               FontSize="14"
+                               VerticalOptions="Center"
+                               FlexLayout.Grow="1" />
+                    </StackLayout>
+                </StackLayout>
+            </StackLayout>
+            
+            <!-- Getting Started Info -->
+            <Frame BackgroundColor="White" 
+                   Opacity="0.9" 
+                   CornerRadius="10" 
+                   Padding="20"
+                   Margin="0,10,0,0">
+                <StackLayout Spacing="10">
+                    <Label Text="Getting Started" 
+                           FontSize="16" 
+                           FontAttributes="Bold"
+                           TextColor="{DynamicResource Primary}"
+                           HorizontalOptions="Center" />
+                    
+                    <Label TextColor="{DynamicResource Primary}" 
+                           FontSize="14"
+                           HorizontalTextAlignment="Center"
+                           LineHeight="1.3">
+                        <Label.Text>
+                            We've included some default workouts to get you started. You can create your first workout pool and define some actions to begin earning points!
+                        </Label.Text>
+                    </Label>
+                </StackLayout>
+            </Frame>
+            
+            <!-- Action Buttons -->
+            <StackLayout Spacing="15" Margin="0,20,0,0">
+                <Button Text="Get Started" 
+                        BackgroundColor="White"
+                        TextColor="{DynamicResource Primary}"
+                        FontSize="18"
+                        FontAttributes="Bold"
+                        CornerRadius="25"
+                        HeightRequest="50"
+                        Clicked="OnGetStartedClicked" />
+                
+                <Button Text="Skip for Now" 
+                        BackgroundColor="Transparent"
+                        TextColor="White"
+                        FontSize="16"
+                        BorderColor="White"
+                        BorderWidth="1"
+                        CornerRadius="25"
+                        HeightRequest="45"
+                        Clicked="OnSkipClicked" />
+            </StackLayout>
+            
+        </StackLayout>
+    </ScrollView>
+    
+</ContentPage>

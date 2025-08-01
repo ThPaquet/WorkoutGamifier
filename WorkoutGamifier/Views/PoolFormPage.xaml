@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="WorkoutGamifier.Views.PoolFormPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="{Binding PageTitle}">
+    
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+            
+            <Label Text="{Binding PageTitle}" 
+                   FontSize="24" 
+                   FontAttributes="Bold" 
+                   HorizontalOptions="Center" />
+
+            <!-- Pool Name -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Pool Name *" FontSize="16" FontAttributes="Bold" />
+                <Entry Text="{Binding PoolName}" 
+                       Placeholder="Enter pool name"
+                       MaxLength="100" />
+                <Label Text="{Binding NameError}" 
+                       TextColor="Red" 
+                       FontSize="12" 
+                       IsVisible="{Binding HasNameError}" />
+            </VerticalStackLayout>
+
+            <!-- Pool Description -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Description (Optional)" FontSize="16" FontAttributes="Bold" />
+                <Editor Text="{Binding PoolDescription}" 
+                        Placeholder="Enter pool description"
+                        HeightRequest="100"
+                        MaxLength="500" />
+                <Label Text="{Binding DescriptionError}" 
+                       TextColor="Red" 
+                       FontSize="12" 
+                       IsVisible="{Binding HasDescriptionError}" />
+            </VerticalStackLayout>
+
+            <!-- Character Count -->
+            <Label Text="{Binding CharacterCountText}" 
+                   FontSize="12" 
+                   TextColor="Gray" 
+                   HorizontalOptions="End" />
+
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="15" Margin="0,20,0,0">
+                <Button Grid.Column="0" 
+                        Text="Cancel" 
+                        Command="{Binding CancelCommand}" 
+                        BackgroundColor="Gray" />
+                
+                <Button Grid.Column="1" 
+                        Text="{Binding SaveButtonText}" 
+                        Command="{Binding SaveCommand}" 
+                        BackgroundColor="Green" 
+                        IsEnabled="{Binding CanSave}" />
+            </Grid>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsVisible="{Binding IsBusy}" 
+                               IsRunning="{Binding IsBusy}" 
+                               Color="Blue" 
+                               HeightRequest="50" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

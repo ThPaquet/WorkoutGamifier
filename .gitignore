@@ -1,0 +1,14 @@
+bin 
+obj
+*.suo
+*.user
+*.cache
+*.csproj.*
+*.sln
+*.suo
+*.ntvs*
+*.nupkg
+*.sln.metaproj
+*.vspscc
+*.vssscc
+.vs

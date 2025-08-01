@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="WorkoutGamifier.Views.WorkoutPoolDetailPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="{Binding Pool.Name}">
+    
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+            
+            <!-- Pool Information -->
+            <Frame BackgroundColor="LightBlue" Padding="15" CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{Binding Pool.Name}" 
+                           FontSize="24" 
+                           FontAttributes="Bold" 
+                           HorizontalOptions="Center" />
+                    
+                    <Label Text="{Binding Pool.Description}" 
+                           FontSize="16" 
+                           HorizontalOptions="Center"
+                           IsVisible="{Binding HasDescription}" />
+                    
+                    <Label Text="{Binding WorkoutCountText}" 
+                           FontSize="14" 
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Navigation and Action Buttons -->
+            <Button Text="← Back to Pools" 
+                    Command="{Binding BackCommand}" 
+                    BackgroundColor="Gray" 
+                    TextColor="White"
+                    Margin="0,0,0,10" />
+            
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                <Button Grid.Column="0" 
+                        Text="Edit Pool" 
+                        Command="{Binding EditPoolCommand}" 
+                        BackgroundColor="Orange" />
+                
+                <Button Grid.Column="1" 
+                        Text="Add Workouts" 
+                        Command="{Binding AddWorkoutsCommand}" 
+                        BackgroundColor="Green" />
+                
+                <Button Grid.Column="2" 
+                        Text="Delete Pool" 
+                        Command="{Binding DeletePoolCommand}" 
+                        BackgroundColor="Red" />
+            </Grid>
+
+            <!-- Workouts in Pool -->
+            <Label Text="Workouts in this Pool" 
+                   FontSize="20" 
+                   FontAttributes="Bold" 
+                   Margin="0,10,0,0" />
+
+            <CollectionView ItemsSource="{Binding WorkoutsInPool}" 
+                            BackgroundColor="Transparent">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10" 
+                              RowDefinitions="Auto,Auto,Auto" 
+                              ColumnDefinitions="*,Auto">
+                            
+                            <!-- Workout Card Background -->
+                            <Frame Grid.RowSpan="3" 
+                                   Grid.ColumnSpan="2" 
+                                   BackgroundColor="White" 
+                                   BorderColor="LightGray" 
+                                   CornerRadius="8" 
+                                   Padding="0" 
+                                   Margin="0,0,0,10">
+                                
+                                <Grid Padding="15" 
+                                      RowDefinitions="Auto,Auto,Auto" 
+                                      ColumnDefinitions="*,Auto">
+                                    
+                                    <!-- Workout Name -->
+                                    <Label Grid.Row="0" Grid.Column="0" 
+                                           Text="{Binding Name}" 
+                                           FontSize="18" 
+                                           FontAttributes="Bold" 
+                                           TextColor="Black" />
+                                    
+                                    <!-- Difficulty and Duration -->
+                                    <StackLayout Grid.Row="1" Grid.Column="0" 
+                                                 Orientation="Horizontal" 
+                                                 Spacing="15">
+                                        <Label Text="{Binding DifficultyLevel, StringFormat='Difficulty: {0}'}" 
+                                               FontSize="14" 
+                                               TextColor="Gray" />
+                                        <Label Text="{Binding EstimatedDurationMinutes, StringFormat='Duration: {0} min'}" 
+                                               FontSize="14" 
+                                               TextColor="Gray" />
+                                    </StackLayout>
+                                    
+                                    <!-- Description -->
+                                    <Label Grid.Row="2" Grid.Column="0" 
+                                           Text="{Binding Description}" 
+                                           FontSize="14" 
+                                           TextColor="DarkGray" 
+                                           MaxLines="2" 
+                                           LineBreakMode="TailTruncation" />
+                                    
+                                    <!-- Remove Button -->
+                                    <Button Grid.Row="0" Grid.Column="1" Grid.RowSpan="3"
+                                            Text="Remove"
+                                            BackgroundColor="Red"
+                                            TextColor="White"
+                                            FontSize="12"
+                                            CornerRadius="5"
+                                            Padding="10,5"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveWorkoutCommand}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                            </Frame>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                
+                <CollectionView.EmptyView>
+                    <StackLayout HorizontalOptions="Center" VerticalOptions="Center" Padding="20">
+                        <Label Text="No workouts in this pool yet" 
+                               FontSize="16" 
+                               HorizontalOptions="Center" 
+                               TextColor="Gray" />
+                        <Label Text="Tap 'Add Workouts' to get started" 
+                               FontSize="14" 
+                               HorizontalOptions="Center" 
+                               TextColor="Gray" />
+                    </StackLayout>
+                </CollectionView.EmptyView>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

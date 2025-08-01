@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="WorkoutGamifier.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:WorkoutGamifier.Views"
+    Title="WorkoutGamifier">
+
+    <!-- Initialization Page (Starting Point) -->
+    <ShellContent
+        Title="Initializing"
+        ContentTemplate="{DataTemplate views:InitializationPage}"
+        Route="initialization"
+        Shell.TabBarIsVisible="False" />
+
+    <!-- Welcome Page (First Run) -->
+    <ShellContent
+        Title="Welcome"
+        ContentTemplate="{DataTemplate views:WelcomePage}"
+        Route="welcome"
+        Shell.TabBarIsVisible="False" />
+
+    <!-- Main App Tabs -->
+    <TabBar Route="main">
+        <ShellContent
+            Title="Sessions"
+            Icon="play_circle.png"
+            ContentTemplate="{DataTemplate views:SessionsPage}"
+            Route="sessions" />
+
+        <ShellContent
+            Title="Workouts"
+            Icon="fitness_center.png"
+            ContentTemplate="{DataTemplate views:WorkoutsPage}"
+            Route="workouts" />
+
+        <ShellContent
+            Title="Pools"
+            Icon="pool.png"
+            ContentTemplate="{DataTemplate views:WorkoutPoolsPage}"
+            Route="pools" />
+
+        <ShellContent
+            Title="Actions"
+            Icon="star.png"
+            ContentTemplate="{DataTemplate views:ActionsPage}"
+            Route="actions" />
+
+        <ShellContent
+            Title="Profile"
+            Icon="person.png"
+            ContentTemplate="{DataTemplate views:ProfilePage}"
+            Route="profile" />
+    </TabBar>
+
+</Shell>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage x:Class="WorkoutGamifier.Views.WorkoutDetailPage"
+                xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:WorkoutGamifier.Views"
+                Title="Workout Details">
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="30">
+            <Label x:Name="PageTitle" 
+                   Text="Add New Workout" 
+                   FontSize="24" 
+                   FontAttributes="Bold" 
+                   HorizontalOptions="Center" />
+
+            <!-- Name Entry -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Workout Name *" FontAttributes="Bold" />
+                <Entry x:Name="NameEntry" 
+                       Placeholder="Enter workout name"
+                       MaxLength="100" />
+            </VerticalStackLayout>
+
+            <!-- Description Entry -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Description" FontAttributes="Bold" />
+                <Editor x:Name="DescriptionEditor" 
+                        Placeholder="Enter workout description"
+                        HeightRequest="80"
+                        MaxLength="500" />
+            </VerticalStackLayout>
+
+            <!-- Instructions Entry -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Instructions" FontAttributes="Bold" />
+                <Editor x:Name="InstructionsEditor" 
+                        Placeholder="Enter detailed workout instructions"
+                        HeightRequest="120"
+                        MaxLength="2000" />
+            </VerticalStackLayout>
+
+            <!-- Duration Entry -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Duration (minutes) *" FontAttributes="Bold" />
+                <Entry x:Name="DurationEntry" 
+                       Placeholder="Enter duration in minutes"
+                       Keyboard="Numeric" />
+            </VerticalStackLayout>
+
+            <!-- Difficulty Picker -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Difficulty Level *" FontAttributes="Bold" />
+                <Picker x:Name="DifficultyPicker" Title="Select difficulty">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Beginner</x:String>
+                            <x:String>Intermediate</x:String>
+                            <x:String>Advanced</x:String>
+                            <x:String>Expert</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </VerticalStackLayout>
+
+            <!-- Preloaded workout info -->
+            <Frame x:Name="PreloadedInfoFrame" 
+                   BackgroundColor="LightYellow" 
+                   IsVisible="False"
+                   Padding="15">
+                <Label Text="This is a pre-loaded workout. Only visibility can be modified." 
+                       FontSize="12" 
+                       TextColor="DarkOrange" />
+            </Frame>
+
+            <!-- Action Buttons -->
+            <VerticalStackLayout Spacing="10">
+                <Button x:Name="SaveButton" 
+                        Text="Save Workout" 
+                        BackgroundColor="Green" 
+                        TextColor="White"
+                        Clicked="OnSaveClicked" />
+                
+                <Button x:Name="DeleteButton" 
+                        Text="Delete Workout" 
+                        BackgroundColor="Red" 
+                        TextColor="White"
+                        Clicked="OnDeleteClicked"
+                        IsVisible="False" />
+                
+                <Button Text="Cancel" 
+                        BackgroundColor="Gray" 
+                        TextColor="White"
+                        Clicked="OnCancelClicked" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</views:BasePage>

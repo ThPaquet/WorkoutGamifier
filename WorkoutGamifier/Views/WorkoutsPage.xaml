@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="WorkoutGamifier.Views.WorkoutsPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Workouts">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="20">
+        <!-- Header -->
+        <VerticalStackLayout Grid.Row="0" Spacing="10">
+            <Label Text="Workout Catalog" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center" />
+            <Label Text="Manage your workout collection" FontSize="16" HorizontalOptions="Center" TextColor="Gray" />
+        </VerticalStackLayout>
+
+        <!-- Search and Filter -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" Margin="0,20,0,10">
+            <SearchBar x:Name="SearchBar" 
+                       Grid.Column="0"
+                       Placeholder="Search workouts..." 
+                       TextChanged="OnSearchTextChanged" />
+            <Picker x:Name="DifficultyPicker" 
+                    Grid.Column="1"
+                    Title="Difficulty"
+                    SelectedIndexChanged="OnDifficultyFilterChanged">
+                <Picker.Items>
+                    <x:String>All</x:String>
+                    <x:String>Beginner</x:String>
+                    <x:String>Intermediate</x:String>
+                    <x:String>Advanced</x:String>
+                    <x:String>Expert</x:String>
+                </Picker.Items>
+            </Picker>
+            <Button x:Name="ShowHiddenBtn" 
+                    Grid.Column="2"
+                    Text="Show Hidden"
+                    Clicked="OnToggleHiddenClicked" />
+        </Grid>
+
+        <!-- Add Button -->
+        <Button Grid.Row="2" 
+                Text="Add New Workout"
+                Clicked="OnAddWorkoutClicked"
+                BackgroundColor="Green"
+                TextColor="White"
+                Margin="0,0,0,10" />
+
+        <!-- Workouts List -->
+        <CollectionView x:Name="WorkoutsCollectionView" Grid.Row="3">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Stroke="LightGray" StrokeThickness="1" Margin="0,5" Padding="15">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="8" />
+                        </Border.StrokeShape>
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto,Auto">
+                            <!-- Workout Name -->
+                            <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                                   Text="{Binding Name}" 
+                                   FontSize="18" 
+                                   FontAttributes="Bold" />
+                            
+                            <!-- Description -->
+                            <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                                   Text="{Binding Description}" 
+                                   FontSize="14" 
+                                   TextColor="Gray"
+                                   Margin="0,5,0,0" />
+                            
+                            <!-- Duration and Difficulty -->
+                            <HorizontalStackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Spacing="15" Margin="0,5,0,0">
+                                <Label Text="{Binding DurationMinutes, StringFormat='⏱️ {0} min'}" 
+                                       FontSize="12" 
+                                       TextColor="Blue" />
+                                <Label Text="{Binding Difficulty, StringFormat='🏋️ {0}'}" 
+                                       FontSize="12" 
+                                       TextColor="Orange" />
+                            </HorizontalStackLayout>
+                            
+                            <!-- Status Indicators -->
+                            <HorizontalStackLayout Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Spacing="10" Margin="0,5,0,0">
+                                <Label Text="📋 Pre-loaded" 
+                                       FontSize="10" 
+                                       TextColor="Green"
+                                       IsVisible="{Binding IsPreloaded}" />
+                                <Label Text="👤 Custom" 
+                                       FontSize="10" 
+                                       TextColor="Purple"
+                                       IsVisible="{Binding IsPreloaded, Converter={StaticResource InvertedBoolConverter}}" />
+                                <Label Text="🙈 Hidden" 
+                                       FontSize="10" 
+                                       TextColor="Red"
+                                       IsVisible="{Binding IsHidden}" />
+                            </HorizontalStackLayout>
+                            
+                            <!-- Action Buttons -->
+                            <HorizontalStackLayout Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Spacing="10" Margin="0,10,0,0">
+                                <Button Text="View Details"
+                                        CommandParameter="{Binding}"
+                                        Clicked="OnViewDetailsClicked"
+                                        BackgroundColor="Blue"
+                                        TextColor="White"
+                                        FontSize="12" />
+                                <Button Text="Edit"
+                                        CommandParameter="{Binding}"
+                                        Clicked="OnEditWorkoutClicked"
+                                        BackgroundColor="Orange"
+                                        TextColor="White"
+                                        FontSize="12" />
+                                <Button Text="{Binding IsHidden, Converter={StaticResource HideShowTextConverter}}"
+                                        CommandParameter="{Binding}"
+                                        Clicked="OnToggleVisibilityClicked"
+                                        BackgroundColor="Gray"
+                                        TextColor="White"
+                                        FontSize="12" />
+                                <Button Text="Delete"
+                                        CommandParameter="{Binding}"
+                                        Clicked="OnDeleteWorkoutClicked"
+                                        BackgroundColor="Red"
+                                        TextColor="White"
+                                        FontSize="12"
+                                        IsVisible="{Binding IsPreloaded, Converter={StaticResource InvertedBoolConverter}}" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

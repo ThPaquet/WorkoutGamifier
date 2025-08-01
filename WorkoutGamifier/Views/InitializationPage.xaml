@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="WorkoutGamifier.Views.InitializationPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="WorkoutGamifier"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{DynamicResource Primary}">
+    
+    <Grid>
+        <StackLayout VerticalOptions="CenterAndExpand" 
+                     HorizontalOptions="CenterAndExpand"
+                     Spacing="30"
+                     Padding="40">
+            
+            <!-- App Logo -->
+            <Image Source="workout_icon.png" 
+                   WidthRequest="100" 
+                   HeightRequest="100"
+                   HorizontalOptions="Center" />
+            
+            <!-- App Name -->
+            <Label Text="WorkoutGamifier" 
+                   FontSize="32" 
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center" />
+            
+            <!-- Loading Indicator -->
+            <ActivityIndicator x:Name="LoadingIndicator"
+                             IsRunning="True"
+                             Color="White"
+                             WidthRequest="40"
+                             HeightRequest="40"
+                             HorizontalOptions="Center" />
+            
+            <!-- Status Message -->
+            <Label x:Name="StatusLabel"
+                   Text="Initializing app..."
+                   FontSize="16"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center" />
+            
+        </StackLayout>
+        
+        <!-- Error Panel (Initially Hidden) -->
+        <Frame x:Name="ErrorPanel"
+               IsVisible="False"
+               BackgroundColor="White"
+               CornerRadius="10"
+               Margin="20"
+               VerticalOptions="CenterAndExpand">
+            
+            <StackLayout Spacing="20">
+                <Label Text="⚠️" 
+                       FontSize="40"
+                       HorizontalOptions="Center" />
+                
+                <Label Text="Initialization Error" 
+                       FontSize="20" 
+                       FontAttributes="Bold"
+                       TextColor="{DynamicResource Primary}"
+                       HorizontalOptions="Center" />
+                
+                <Label x:Name="ErrorMessageLabel"
+                       Text=""
+                       FontSize="14"
+                       TextColor="{DynamicResource Primary}"
+                       HorizontalTextAlignment="Center"
+                       LineHeight="1.3" />
+                
+                <Button Text="Retry" 
+                        BackgroundColor="{DynamicResource Primary}"
+                        TextColor="White"
+                        CornerRadius="25"
+                        HeightRequest="45"
+                        Clicked="OnRetryClicked" />
+                
+                <Button Text="Continue Anyway" 
+                        BackgroundColor="Transparent"
+                        TextColor="{DynamicResource Primary}"
+                        BorderColor="{DynamicResource Primary}"
+                        BorderWidth="1"
+                        CornerRadius="25"
+                        HeightRequest="40"
+                        Clicked="OnContinueAnywayClicked" />
+            </StackLayout>
+            
+        </Frame>
+        
+    </Grid>
+    
+</ContentPage>
